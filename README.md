@@ -1,69 +1,70 @@
-# Welcome to React Router!
+# ¡Bienvenido a React Router!
 
-A modern, production-ready template for building full-stack React applications using React Router.
+Una plantilla moderna y lista para producción para construir aplicaciones React full-stack usando React Router.
 
-## Features
+## Características
 
-- 🚀 Server-side rendering
+- 🚀 Renderizado en el lado del servidor (SSR)
 - ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization
-- 🔄 Data loading and mutations
-- 🔒 TypeScript by default
-- 🎉 TailwindCSS for styling
-- 💾 PostgreSQL + DrizzleORM
-- 📖 [React Router docs](https://reactrouter.com/)
+- 📦 Empaquetado y optimización de assets
+- 🔄 Carga de datos y mutaciones con React Router
+- 🤝 API End-to-end typesafe con **tRPC**
+- 🔒 TypeScript por defecto
+- 🎉 TailwindCSS para estilos
+- 💾 PostgreSQL + DrizzleORM para la base de datos
+- 📖 [Documentación de React Router](https://reactrouter.com/)
 
-## Getting Started
+## Primeros Pasos
 
-### Installation
+### Instalación
 
-Install the dependencies:
-
-```bash
-npm install
-```
-
-### Development
-
-Copy `.env.example` to `.env` and provide a `DATABASE_URL` with your connection string.
-
-Run an initial database migration:
+Instala las dependencias:
 
 ```bash
-npm run db:migrate
+pnpm install
 ```
 
-Start the development server with HMR:
+### Desarrollo
+
+Copia `.env.example` a `.env` y proporciona tu `DATABASE_URL` con la cadena de conexión.
+
+Ejecuta una migración inicial de la base de datos:
 
 ```bash
-npm run dev
+pnpm run db:migrate
 ```
 
-Your application will be available at `http://localhost:5173`.
-
-## Building for Production
-
-Create a production build:
+Inicia el servidor de desarrollo con HMR:
 
 ```bash
-npm run build
+pnpm run dev
 ```
 
-## Deployment
+Tu aplicación estará disponible en `http://localhost:5173`.
 
-### Docker Deployment
+## Compilación para Producción
 
-To build and run using Docker:
+Crea una compilación para producción:
 
 ```bash
-# For npm
-docker build -t my-app .
-
-# Run the container
-docker run -p 3000:3000 my-app
+pnpm run build
 ```
 
-The containerized application can be deployed to any platform that supports Docker, including:
+## Despliegue
+
+### Despliegue con Docker
+
+Para construir y ejecutar usando Docker:
+
+```bash
+# Construir la imagen
+docker build -t mi-app .
+
+# Ejecutar el contenedor
+docker run -p 3000:3000 mi-app
+```
+
+La aplicación en su contenedor puede ser desplegada en cualquier plataforma que soporte Docker, incluyendo:
 
 - AWS ECS
 - Google Cloud Run
@@ -72,25 +73,25 @@ The containerized application can be deployed to any platform that supports Dock
 - Fly.io
 - Railway
 
-### DIY Deployment
+### Despliegue Manual
 
-If you're familiar with deploying Node applications, the built-in app server is production-ready.
+Si estás familiarizado con el despliegue de aplicaciones Node, el servidor de la aplicación integrado está listo para producción.
 
-Make sure to deploy the output of `npm run build`
+Asegúrate de desplegar el resultado de `pnpm run build`:
 
 ```
 ├── package.json
-├── package-lock.json (or pnpm-lock.yaml, or bun.lockb)
+├── pnpm-lock.yaml
 ├── server.js
 ├── build/
-│   ├── client/    # Static assets
-│   └── server/    # Server-side code
+│   ├── client/    # Assets estáticos
+│   └── server/    # Código del lado del servidor
 ```
 
-## Styling
+## Estilos
 
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
+Esta plantilla viene con [Tailwind CSS](https://tailwindcss.com/) ya configurado para una experiencia de inicio simple. Puedes usar cualquier framework de CSS que prefieras.
 
 ---
 
-Built with ❤️ using React Router.
+Construido con ❤️ usando React Router.
