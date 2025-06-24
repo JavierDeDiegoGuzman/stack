@@ -164,26 +164,37 @@ export const useTodoProjectStore = create<TodoProjectStore>((set, get) => ({
     }
   },
 
-  // Crea un nuevo proyecto y revalida el array mostrando revalidación
+  // Crea un nuevo proyecto, lo añade localmente y luego revalida con el backend
   createProject: async (name: string) => {
     set({ revalidatingProjects: true });
     try {
-      await trpc.todos.createProject.mutate({ name });
+      // Ahora el backend devuelve el proyecto creado
+      const newProject = await trpc.todos.createProject.mutate({ name });
+      // Añadimos el nuevo proyecto al array local inmediatamente
+      set(state => ({
+        projects: [...state.projects, newProject]
+      }));
+      // Revalidamos en background para mantener el orden y la consistencia
       const projects = await trpc.todos.listProjects.query();
       set({ projects });
     } catch (e: any) {
       console.error('Error en createProject:', e);
-      throw e; // Re-lanzamos el error para que el componente lo maneje
+      throw e;
     } finally {
       set({ revalidatingProjects: false });
     }
   },
 
-  // Edita el nombre de un proyecto y revalida el array mostrando revalidación
+  // Edita el nombre de un proyecto y actualiza el array local tras la mutación, luego revalida en background
   updateProject: async (id: number, name: string) => {
     set({ revalidatingProjects: true });
     try {
       await trpc.todos.updateProject.mutate({ id, name });
+      // Actualizamos el nombre localmente
+      set(state => ({
+        projects: state.projects.map(p => p.id === id ? { ...p, name } : p)
+      }));
+      // Revalidamos en background para mantener el orden y consistencia
       const projects = await trpc.todos.listProjects.query();
       set({ projects });
     } catch (e: any) {
@@ -194,11 +205,16 @@ export const useTodoProjectStore = create<TodoProjectStore>((set, get) => ({
     }
   },
 
-  // Borra un proyecto y revalida el array mostrando revalidación
+  // Borra un proyecto y actualiza el array local tras la mutación, luego revalida en background
   deleteProject: async (id: number) => {
     set({ revalidatingProjects: true });
     try {
       await trpc.todos.deleteProject.mutate({ id });
+      // Eliminamos localmente
+      set(state => ({
+        projects: state.projects.filter(p => p.id !== id)
+      }));
+      // Revalidamos en background para mantener el orden y consistencia
       const projects = await trpc.todos.listProjects.query();
       set({ projects });
     } catch (e: any) {
@@ -209,12 +225,17 @@ export const useTodoProjectStore = create<TodoProjectStore>((set, get) => ({
     }
   },
 
-  // Crea un nuevo todo en un proyecto y actualiza el array global mostrando revalidación
+  // Crea un nuevo todo, lo añade localmente y luego revalida con el backend
   createTodo: async (content: string, projectId: number) => {
     set({ revalidatingTodos: true });
     try {
-      await trpc.todos.create.mutate({ content, projectId });
-      // Refrescar la lista de todos de ese proyecto en el array global
+      // Ahora el backend devuelve el todo creado
+      const newTodo = await trpc.todos.create.mutate({ content, projectId });
+      // Añadimos el nuevo todo al array local inmediatamente
+      set(state => ({
+        allTodos: [...state.allTodos, newTodo]
+      }));
+      // Revalidamos en background para mantener el orden y la consistencia
       const todos = await trpc.todos.list.query({ projectId });
       set(state => ({
         allTodos: [
@@ -230,14 +251,18 @@ export const useTodoProjectStore = create<TodoProjectStore>((set, get) => ({
     }
   },
 
-  // Actualiza el estado de un todo y refresca el array global mostrando revalidación
+  // Actualiza un todo localmente tras la mutación, luego revalida en background
   updateTodo: async (id: number, completed: number) => {
     const todo = get().allTodos.find(t => t.id === id);
     if (!todo) return;
     set({ revalidatingTodos: true });
     try {
       await trpc.todos.update.mutate({ id, completed });
-      // Refrescar la lista de todos de ese proyecto en el array global
+      // Actualizamos el todo localmente
+      set(state => ({
+        allTodos: state.allTodos.map(t => t.id === id ? { ...t, completed } : t)
+      }));
+      // Revalidamos en background para mantener el orden y consistencia
       const todos = await trpc.todos.list.query({ projectId: todo.projectId });
       set(state => ({
         allTodos: [
@@ -253,14 +278,18 @@ export const useTodoProjectStore = create<TodoProjectStore>((set, get) => ({
     }
   },
 
-  // Borra un todo y refresca el array global mostrando revalidación
+  // Borra un todo localmente tras la mutación, luego revalida en background
   deleteTodo: async (id: number) => {
     const todo = get().allTodos.find(t => t.id === id);
     if (!todo) return;
     set({ revalidatingTodos: true });
     try {
       await trpc.todos.delete.mutate({ id });
-      // Refrescar la lista de todos de ese proyecto en el array global
+      // Eliminamos el todo localmente
+      set(state => ({
+        allTodos: state.allTodos.filter(t => t.id !== id)
+      }));
+      // Revalidamos en background para mantener el orden y consistencia
       const todos = await trpc.todos.list.query({ projectId: todo.projectId });
       set(state => ({
         allTodos: [

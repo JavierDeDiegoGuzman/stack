@@ -31,8 +31,11 @@ export const todoRouter = router({
       console.log('[todos.create] input:', input);
       if (!ctx.db) throw new Error('Database not available');
       if (!ctx.user) throw new Error('No autenticado');
-      await ctx.db.insert(todos).values({ content: input.content, projectId: input.projectId, userId: ctx.user.id });
-      return true;
+      const inserted = await ctx.db
+        .insert(todos)
+        .values({ content: input.content, projectId: input.projectId, userId: ctx.user.id })
+        .returning();
+      return inserted[0];
     }),
 
   update: publicProcedure
@@ -74,8 +77,11 @@ export const todoRouter = router({
     console.log('[todos.createProject] input:', input);
     if (!ctx.db) throw new Error('Database not available');
     if (!ctx.user) throw new Error('No autenticado');
-    await ctx.db.insert(projects).values({ name: input.name, userId: ctx.user.id });
-    return true;
+    const inserted = await ctx.db
+      .insert(projects)
+      .values({ name: input.name, userId: ctx.user.id })
+      .returning();
+    return inserted[0];
   }),
 
   deleteProject: publicProcedure.input(z.object({ id: z.number() })).mutation(async ({ ctx, input }) => {
