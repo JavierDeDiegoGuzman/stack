@@ -4,7 +4,7 @@
 // Utiliza llamadas directas a tRPC fuera de React, siguiendo el patrón de los otros componentes.
 
 import { useEffect, useState } from 'react';
-import { trpcServer } from '~/utils/trpcServer';
+import { trpc } from '~/utils/trpc';
 
 // Utilidad para truncar cadenas largas
 function truncate(str: string, n = 60) {
@@ -33,7 +33,7 @@ export default function CookiesPage() {
     setLoading(true);
     setError(null);
     try {
-      const data = await trpcServer.cookies.list.query();
+      const data = await trpc.cookies.list.query();
       setCookies(data);
     } catch (e: any) {
       setError(e.message);
@@ -44,7 +44,7 @@ export default function CookiesPage() {
 
   async function handleDelete(name: string) {
     try {
-      await trpcServer.cookies.delete.mutate({ name });
+      await trpc.cookies.delete.mutate({ name });
       await fetchCookies();
     } catch (e: any) {
       setError(e.message);
@@ -64,7 +64,7 @@ export default function CookiesPage() {
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
     try {
-      await trpcServer.cookies.set.mutate({ name: newName, value: newValue });
+      await trpc.cookies.set.mutate({ name: newName, value: newValue });
       setEditing(null);
       setNewName('');
       setNewValue('');
@@ -77,7 +77,7 @@ export default function CookiesPage() {
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
     try {
-      await trpcServer.cookies.set.mutate({ name: newName, value: newValue });
+      await trpc.cookies.set.mutate({ name: newName, value: newValue });
       setNewName('');
       setNewValue('');
       await fetchCookies();

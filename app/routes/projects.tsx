@@ -6,17 +6,8 @@
 import { useEffect, useState } from "react";
 import { useTodoProjectStore } from "~/utils/todoProjectStore";
 import { NavLink } from "react-router";
-import type { Route } from "./+types/projects";
-import { trpcServer } from "~/utils/trpcServer";
 
-// Loader SSR: obtiene los proyectos en el servidor
-export async function loader({ request }: Route.LoaderArgs) {
-  // Llama a tRPC directamente en el servidor
-  const projects = await trpcServer.todos.listProjects.query();
-  return projects;
-}
-
-export default function ProjectsPage({ loaderData }: Route.ComponentProps) {
+export default function ProjectsPage() {
   // Usamos la store para obtener y manipular proyectos
   const {
     projects,
@@ -28,6 +19,7 @@ export default function ProjectsPage({ loaderData }: Route.ComponentProps) {
     updateProject,
     deleteProject,
     setProjects, // Setter para hidratar Zustand
+    fetchTodos,
   } = useTodoProjectStore();
 
   const [newProject, setNewProject] = useState("");
@@ -36,11 +28,6 @@ export default function ProjectsPage({ loaderData }: Route.ComponentProps) {
   const [creatingProject, setCreatingProject] = useState(false);
   const [updatingProject, setUpdatingProject] = useState(false);
   const [deletingProjects, setDeletingProjects] = useState<Set<number>>(new Set());
-
-  // Hidratamos Zustand con los datos SSR al montar
-  useEffect(() => {
-    if (loaderData) setProjects(loaderData);
-  }, [loaderData, setProjects]);
 
   // Cargamos los proyectos al montar el componente
   useEffect(() => {
@@ -129,7 +116,11 @@ export default function ProjectsPage({ loaderData }: Route.ComponentProps) {
         {projects?.map((project) => (
           <li key={project.id} className="flex items-center justify-between p-2 border-b">
             <div className="flex items-center">
-              <NavLink to={`/todos/${project.id}`} className="font-semibold hover:underline">
+              <NavLink
+                to={`/todos/${project.id}`}
+                className="font-semibold hover:underline"
+                onMouseEnter={() => fetchTodos(project.id)}
+              >
                 {project.name}
               </NavLink>
               {/* Botón para editar */}

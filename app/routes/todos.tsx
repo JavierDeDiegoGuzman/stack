@@ -5,24 +5,12 @@
 
 import { useEffect, useState } from "react";
 import { useTodoProjectStore } from "~/utils/todoProjectStore";
-import type { Route } from "./+types/todos";
-import { useNavigate } from "react-router";
-import { trpcServer } from "~/utils/trpcServer";
+import { useParams, useNavigate } from "react-router";
 
-// Loader SSR: obtiene los todos y los proyectos en el servidor
-export async function loader({ params }: Route.LoaderArgs) {
-  const projectId = Number(params.todoID);
-  // Obtenemos los todos del proyecto y la lista de proyectos (para el nombre)
-  const [todos, projects] = await Promise.all([
-    trpcServer.todos.list.query({ projectId }),
-    trpcServer.todos.listProjects.query(),
-  ]);
-  return { todos, projects, projectId };
-}
-
-export default function TodosPage({ params, loaderData }: Route.ComponentProps) {
+export default function TodosPage() {
   // Obtenemos el id del proyecto desde los parámetros de la ruta
-  const projectId = Number(params.todoID);
+  const { todoID } = useParams();
+  const projectId = Number(todoID);
 
   // Hook de navegación de react-router
   const navigate = useNavigate();
@@ -38,8 +26,7 @@ export default function TodosPage({ params, loaderData }: Route.ComponentProps) 
     updateTodo,
     deleteTodo,
     projects,
-    setTodosForProject, // Setter para hidratar Zustand
-    setProjects, // Setter para hidratar proyectos
+    fetchProjects,
   } = useTodoProjectStore();
 
   // Obtenemos los todos cacheados de este proyecto
@@ -54,18 +41,12 @@ export default function TodosPage({ params, loaderData }: Route.ComponentProps) 
   const [updatingTodos, setUpdatingTodos] = useState<Set<number>>(new Set());
   const [deletingTodos, setDeletingTodos] = useState<Set<number>>(new Set());
 
-  // Hidratamos Zustand con los datos SSR al montar
+  // Cargamos los proyectos y los todos al montar o cambiar el proyecto
   useEffect(() => {
-    if (loaderData) {
-      setTodosForProject(loaderData.projectId, loaderData.todos);
-      setProjects(loaderData.projects);
-    }
-  }, [loaderData, setTodosForProject, setProjects]);
-
-  // Cargamos los todos al montar o cambiar el proyecto
-  useEffect(() => {
+    fetchProjects();
     fetchTodos(projectId);
-  }, [fetchTodos, projectId]);
+    // eslint-disable-next-line
+  }, [projectId]);
 
   const handleCreateTodo = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -111,9 +92,6 @@ export default function TodosPage({ params, loaderData }: Route.ComponentProps) 
       });
     }
   };
-
-  // Si no hay todos en caché y está cargando, mostramos loading inicial
-
 
   if (errorTodos) {
     return <div>Error al cargar los todos: {errorTodos}</div>;
@@ -194,8 +172,6 @@ export default function TodosPage({ params, loaderData }: Route.ComponentProps) 
       {revalidatingTodos && todos.length > 0 && (
         <div className="text-xs text-gray-400 mb-2">Actualizando lista...</div>
       )}
-
-
     </div>
   );
 } 

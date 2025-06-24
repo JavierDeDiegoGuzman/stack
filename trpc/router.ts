@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { publicProcedure, router } from './trpc';
 import { todoRouter } from './routers/todo';
 import { cookieRouter } from './routers/cookie';
+import { authRouter } from './routers/auth';
 
 
 export const appRouter = router({
@@ -24,6 +25,7 @@ export const appRouter = router({
   // Aquí puedes añadir más rutas anidando routers.
   todos: todoRouter,
   cookies: cookieRouter,
+  auth: authRouter,
 });
 
 // Exporta el tipo del router. Lo necesitarás en el cliente.
