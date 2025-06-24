@@ -6,45 +6,9 @@
 
 import { z } from 'zod';
 import { publicProcedure, router } from './trpc';
-import { todos } from '~/database/schema';
-import { eq } from 'drizzle-orm';
+import { todoRouter } from './routers/todo';
+import { cookieRouter } from './routers/cookie';
 
-const todoRouter = router({
-  list: publicProcedure.query(async ({ ctx }) => {
-    if (!ctx.db) {
-      throw new Error('Database context not available');
-    }
-    const todoList = await ctx.db.select().from(todos).orderBy(todos.id);
-    return todoList;
-  }),
-
-  create: publicProcedure
-    .input(z.object({ content: z.string().min(1) }))
-    .mutation(async ({ ctx, input }) => {
-      if (!ctx.db) throw new Error('Database not available');
-      await ctx.db.insert(todos).values({ content: input.content });
-      return true;
-    }),
-
-  update: publicProcedure
-    .input(z.object({ id: z.number(), completed: z.number().min(0).max(1) }))
-    .mutation(async ({ ctx, input }) => {
-      if (!ctx.db) throw new Error('Database not available');
-      await ctx.db
-        .update(todos)
-        .set({ completed: input.completed })
-        .where(eq(todos.id, input.id));
-      return true;
-    }),
-
-  delete: publicProcedure
-    .input(z.object({ id: z.number() }))
-    .mutation(async ({ ctx, input }) => {
-      if (!ctx.db) throw new Error('Database not available');
-      await ctx.db.delete(todos).where(eq(todos.id, input.id));
-      return true;
-    }),
-});
 
 export const appRouter = router({
   greeting: publicProcedure
@@ -59,6 +23,7 @@ export const appRouter = router({
     }),
   // Aquí puedes añadir más rutas anidando routers.
   todos: todoRouter,
+  cookies: cookieRouter,
 });
 
 // Exporta el tipo del router. Lo necesitarás en el cliente.

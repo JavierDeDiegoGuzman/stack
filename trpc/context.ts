@@ -12,36 +12,17 @@ import * as schema from '~/database/schema';
 // Creamos un tipo explícito para la base de datos para mayor claridad.
 type DbType = PostgresJsDatabase<typeof schema>;
 
-// Definimos la forma de nuestro contexto.
-interface CreateContextOptions {
-  db: DbType | null;
-}
-
-/**
- * Crea el contexto interno para una petición.
- * Aquí es donde transformarías la petición (req) en algo útil para tus resolvers.
- * @internal
- */
-const createInnerTRPCContext = (opts: CreateContextOptions) => {
-  return {
-    db: opts.db,
-  };
-};
-
-/**
- * Esta es la función que se ejecuta para cada petición que llega al servidor.
- * Proporciona el contexto a tus procedimientos tRPC.
- *
- * @see https://trpc.io/docs/server/context
- */
+// Ahora el contexto incluye db, req y res para poder manipular cookies y cabeceras.
 export const createContext = ({ req, res }: trpcExpress.CreateExpressContextOptions) => {
   // Obtenemos la base de datos del contexto de base de datos que ya tienes configurado.
   const db = DatabaseContext.getStore() as DbType | null;
 
-  // Pasamos la base de datos al contexto interno.
-  return createInnerTRPCContext({
+  // Devolvemos también req y res para poder manipular cookies en los routers tRPC.
+  return {
     db,
-  });
+    req,
+    res,
+  };
 };
 
 export type Context = Awaited<ReturnType<typeof createContext>>; 

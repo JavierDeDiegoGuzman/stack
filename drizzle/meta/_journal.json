@@ -15,6 +15,13 @@
       "when": 1750491886760,
       "tag": "0001_flimsy_the_phantom",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1750748291965,
+      "tag": "0002_worried_lyja",
+      "breakpoints": true
     }
   ]
 }
