@@ -2,6 +2,7 @@
 import { createTRPCClient, httpBatchLink, type TRPCClient } from '@trpc/client';
 import type { AppRouter } from '../../trpc/router';
 
+// Obtenemos la URL base de la API desde variable de entorno o por defecto localhost
 //export const trpc = createTRPCReact<AppRouter>(); 
 
 // Cliente clásico de tRPC para usar fuera de React
@@ -9,7 +10,7 @@ import type { AppRouter } from '../../trpc/router';
 export const trpc: TRPCClient<AppRouter> = createTRPCClient<AppRouter>({
   links: [
     httpBatchLink({
-      url: 'http://localhost:3000/trpc',
+      url: "/trpc",
     }),
   ],
 });
