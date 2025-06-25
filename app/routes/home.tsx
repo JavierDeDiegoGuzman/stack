@@ -1,60 +1,22 @@
-import { database } from "~/database/context";
-import * as schema from "~/database/schema";
+import { Link } from "react-router";
 
-import type { Route } from "./+types/home";
-import { Welcome } from "../welcome/welcome";
-
-export function meta({}: Route.MetaArgs) {
-  return [
-    { title: "New React Router App" },
-    { name: "description", content: "Welcome to React Router!" },
-  ];
-}
-
-export async function action({ request }: Route.ActionArgs) {
-  const formData = await request.formData();
-  let name = formData.get("name");
-  let email = formData.get("email");
-  if (typeof name !== "string" || typeof email !== "string") {
-    return { guestBookError: "Name and email are required" };
-  }
-
-  name = name.trim();
-  email = email.trim();
-  if (!name || !email) {
-    return { guestBookError: "Name and email are required" };
-  }
-
-  const db = database();
-  try {
-    await db.insert(schema.guestBook).values({ name, email });
-  } catch (error) {
-    return { guestBookError: "Error adding to guest book" };
-  }
-}
-
-export async function loader({ context }: Route.LoaderArgs) {
-  const db = database();
-
-  const guestBook = await db.query.guestBook.findMany({
-    columns: {
-      id: true,
-      name: true,
-    },
-  });
-
-  return {
-    guestBook,
-    message: context.VALUE_FROM_EXPRESS,
-  };
-}
-
-export default function Home({ actionData, loaderData }: Route.ComponentProps) {
+export default function Home() {
   return (
-    <Welcome
-      guestBook={loaderData.guestBook}
-      guestBookError={actionData?.guestBookError}
-      message={loaderData.message}
-    />
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "80vh" }}>
+      {/* Título principal */}
+      <h1>Gestión de Proyectos</h1>
+      {/* Subtítulo explicativo */}
+      <h2>Organiza tus proyectos y tareas fácilmente</h2>
+      <div style={{ marginTop: 32, display: "flex", gap: 16 }}>
+        {/* Botón para ir a la página de login */}
+        <Link to="/login">
+          <button>Iniciar sesión</button>
+        </Link>
+        {/* Botón para ir a la página de registro */}
+        <Link to="/register">
+          <button>Registrarse</button>
+        </Link>
+      </div>
+    </div>
   );
 }

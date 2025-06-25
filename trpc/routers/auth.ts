@@ -9,6 +9,7 @@ import type { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { users } from '~/database/schema';
 import { eq } from 'drizzle-orm';
+import bcrypt from 'bcryptjs';
 
 // Clave secreta para firmar los JWT (en producción usa variable de entorno)
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecret';
@@ -24,7 +25,14 @@ export const authRouter = router({
     if (existing.length > 0) {
       throw new Error('El usuario ya existe');
     }
-    await ctx.db.insert(users).values({ email: input.email, password: input.password });
+    // Ciframos la contraseña antes de guardar
+    const hashedPassword = await bcrypt.hash(input.password, 10);
+    // Creamos el usuario con la contraseña cifrada
+    const inserted = await ctx.db.insert(users).values({ email: input.email, password: hashedPassword }).returning();
+    // Generamos el JWT igual que en login
+    const user = inserted[0];
+    const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
+    (ctx.res as Response).cookie('auth_token', token, { httpOnly: true, sameSite: 'lax' });
     return { ok: true };
   }),
 
@@ -35,7 +43,8 @@ export const authRouter = router({
   })).mutation(async ({ ctx, input }) => {
     if (!ctx.db) throw new Error('Database not available');
     const user = await ctx.db.select().from(users).where(eq(users.email, input.email));
-    if (!user[0] || user[0].password !== input.password) {
+    // Comprobamos que el usuario existe y la contraseña es correcta usando bcrypt
+    if (!user[0] || !(await bcrypt.compare(input.password, user[0].password))) {
       throw new Error('Credenciales incorrectas');
     }
     // Genera un JWT

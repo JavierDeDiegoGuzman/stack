@@ -5,7 +5,7 @@
 
 import { useEffect, useState } from "react";
 import { useTodoProjectStore } from "~/utils/todoProjectStore";
-import { NavLink } from "react-router";
+import { NavLink, useNavigate } from "react-router";
 
 export default function ProjectsPage() {
   // Usamos la store para obtener y manipular proyectos
@@ -20,8 +20,10 @@ export default function ProjectsPage() {
     deleteProject,
     setProjects, // Setter para hidratar Zustand
     fetchTodos,
+    logout, // Añadimos logout de la store
   } = useTodoProjectStore();
 
+  const navigate = useNavigate(); // Para redirigir tras logout
   const [newProject, setNewProject] = useState("");
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editingName, setEditingName] = useState("");
@@ -85,10 +87,30 @@ export default function ProjectsPage() {
     }
   };
 
+  // Handler para logout
+  const handleLogout = async () => {
+    try {
+      await logout();
+      // Redirigimos al login tras cerrar sesión
+      navigate("/login");
+    } catch (error) {
+      console.error("Error al cerrar sesión:", error);
+    }
+  };
+
   if (errorProjects) return <div>Error al cargar proyectos: {errorProjects}</div>;
 
   return (
     <div className="container p-4 mx-auto">
+      {/* Botón de logout arriba a la derecha */}
+      <div className="flex justify-end mb-4">
+        <button
+          onClick={handleLogout}
+          className="px-4 py-2 text-white bg-gray-700 hover:bg-gray-900 rounded"
+        >
+          Cerrar sesión
+        </button>
+      </div>
       <h1 className="mb-4 text-2xl font-bold">Proyectos</h1>
       <form onSubmit={handleCreateProject} className="flex mb-4">
         <input
