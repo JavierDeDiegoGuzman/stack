@@ -42,6 +42,7 @@ interface TodoProjectStore {
   deleteTodo: (id: number) => Promise<void>;
   setProjects: (projects: Project[]) => void;
   setTodosForProject: (projectId: number, todos: Todo[]) => void;
+  prefetchTodos: (projectId: number) => Promise<void>;
 }
 
 export const useTodoProjectStore = create<TodoProjectStore>()(
@@ -160,34 +161,12 @@ export const useTodoProjectStore = create<TodoProjectStore>()(
         }
       },
 
-      // Obtiene los todos de un proyecto, usando caché, localStorage y revalidando en background
+      // Obtiene los todos de un proyecto, usando caché y revalidando en background
       fetchTodos: async (projectId: number) => {
         // Comprobamos si hay todos en caché para este proyecto
         const cachedTodos = get().allTodos.filter(t => t.projectId === projectId);
         if (cachedTodos.length === 0) {
-          // No hay todos en memoria, intentamos hidratar desde localStorage
-          if (typeof window !== 'undefined') {
-            const persisted = localStorage.getItem('todo-project-store');
-            if (persisted) {
-              try {
-                const parsed = JSON.parse(persisted);
-                if (parsed.state && parsed.state.allTodos && Array.isArray(parsed.state.allTodos)) {
-                  const todosFromStorage = parsed.state.allTodos.filter((t: any) => t.projectId === projectId);
-                  if (todosFromStorage.length > 0) {
-                    // Hidratamos el estado con los todos guardados para este proyecto
-                    set(state => ({
-                      allTodos: [
-                        ...state.allTodos.filter(t => t.projectId !== projectId),
-                        ...todosFromStorage
-                      ]
-                    }));
-                  }
-                }
-              } catch (e) {
-                // Si hay error al parsear, ignoramos y seguimos
-              }
-            }
-          }
+          // No hay todos en memoria, mostramos loading
           set({ loadingTodos: true, errorTodos: undefined });
         } else {
           // Hay todos en caché, solo revalidamos en background
@@ -205,6 +184,20 @@ export const useTodoProjectStore = create<TodoProjectStore>()(
           }));
         } catch (e: any) {
           set({ errorTodos: e.message, loadingTodos: false, revalidatingTodos: false });
+        }
+      },
+
+      // Prefetch de todos de un proyecto
+      prefetchTodos: async (projectId: number) => {
+        const cachedTodos = get().allTodos.filter(t => t.projectId === projectId);
+        if (cachedTodos.length === 0) {
+          const todos = await trpc.todos.list.query({ projectId });
+          set(state => ({
+            allTodos: [
+              ...state.allTodos.filter(t => t.projectId !== projectId),
+              ...todos
+            ]
+          }));
         }
       },
 

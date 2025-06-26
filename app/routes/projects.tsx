@@ -18,9 +18,8 @@ export default function ProjectsPage() {
     createProject,
     updateProject,
     deleteProject,
-    setProjects, // Setter para hidratar Zustand
-    fetchTodos,
-    logout, // Añadimos logout de la store
+    prefetchTodos,
+    logout,
   } = useTodoProjectStore();
 
   const navigate = useNavigate(); // Para redirigir tras logout
@@ -141,7 +140,7 @@ export default function ProjectsPage() {
               <NavLink
                 to={`/todos/${project.id}`}
                 className="font-semibold hover:underline"
-                onMouseEnter={() => fetchTodos(project.id)}
+                onMouseEnter={() => prefetchTodos(project.id)}
               >
                 {project.name}
               </NavLink>
